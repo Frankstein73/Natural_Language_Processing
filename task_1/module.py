@@ -6,7 +6,6 @@ import matplotlib.pyplot as plt
 class Ngram:
     def __init__(self, data, ngram=None, iters=1000, lower_case=True):
         start_point = random.randint(0, len(data) - iters - 1)
-        print(start_point)
         self.phrase_list = data['Phrase'][start_point:iters + start_point]
         self.sentiment = data['Sentiment'][start_point:iters + start_point].to_numpy()
         self.len = iters
