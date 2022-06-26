@@ -5,8 +5,10 @@ import matplotlib.pyplot as plt
 
 class Ngram:
     def __init__(self, data, ngram=None, iters=1000, lower_case=True):
-        self.phrase_list = data['Phrase'][:iters]
-        self.sentiment = data['Sentiment'][:iters].to_numpy()
+        start_point = random.randint(0, len(data) - iters - 1)
+        print(start_point)
+        self.phrase_list = data['Phrase'][start_point:iters + start_point]
+        self.sentiment = data['Sentiment'][start_point:iters + start_point].to_numpy()
         self.len = iters
         self.word_bags = {}
         self.lower_case = lower_case
@@ -46,8 +48,8 @@ class SoftmaxRegression:
         self.loss = None
 
     def softmax(self, vector_x):
-        vector_x = np.exp(vector_x - np.max(vector_x))
-        return vector_x / np.sum(vector_x)
+        vector_x = np.exp(vector_x - np.max(vector_x, axis=-1, keepdims=True))
+        return vector_x / np.sum(vector_x, axis=-1, keepdims=True)
 
     def one_hot(self, y):
         vector_y = np.zeros(self.num_type)
@@ -55,11 +57,7 @@ class SoftmaxRegression:
         return vector_y
 
     def calculate(self, X):
-        WX = X.dot(self.W)
-        WX -= np.max(WX, axis=1, keepdims=True)
-        WX = np.exp(WX)
-        WX /= np.sum(WX, axis=1, keepdims=True)
-        return np.argmax(WX, axis=1)
+        return np.argmax(self.softmax(X @ self.W), axis=-1)
 
     def predict(self, X, y):
         num_sample, num_features = X.shape
@@ -70,7 +68,6 @@ class SoftmaxRegression:
             if y[i] == y_pred[i]:
                 correct += 1
         correct /= num_sample
-        print('ans = ', ans)
         return correct
 
     def cross_entropy(self, y, y_pred):
@@ -83,7 +80,6 @@ class SoftmaxRegression:
         x = list(range(1, epochs + 1))
         plt.xlabel('Epoch')
         plt.ylabel('Cross Entropy')
-        # plt.yscale('log')
         plt.plot(x, self.loss, color='red')
         plt.show()
 
@@ -91,7 +87,6 @@ class SoftmaxRegression:
         self.num_sample, self.num_features = X.shape
         self.W = np.ones((self.num_features, self.num_type))
         self.loss = []
-
         if strategy == 'mini_batch':
             epochs = epochs // mini_size
             for epoch in range(epochs):
