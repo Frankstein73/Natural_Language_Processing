@@ -9,7 +9,7 @@ num_sample = 1000
 per = 0.7  # per = num_train / num_sample
 ngram = 3
 epochs = 100000
-learning_rate = 0.01
+learning_rate = 0.1
 strategy = 'mini_batch'  # shuffle or mini_batch or batch
 mini_batch_size = 10
 
