@@ -95,7 +95,6 @@ class SoftmaxRegression:
                     y_pred = self.softmax(X[id] @ self.W)
                     grad += np.outer(X[id], self.one_hot(y[id]) - y_pred)
                 self.W += lr * grad / mini_size
-
         elif strategy == 'shuffle':
             for epoch in range(epochs):
                 grad = np.zeros((self.num_features, self.num_type))
@@ -103,7 +102,6 @@ class SoftmaxRegression:
                 y_pred = self.softmax(X[id] @ self.W)
                 grad += np.outer(X[id], self.one_hot(y[id]) - y_pred)
                 self.W += lr * grad
-
         elif strategy == 'batch':
             epochs = epochs // self.num_sample
             for epoch in range(epochs):
@@ -112,6 +110,5 @@ class SoftmaxRegression:
                     y_pred = self.softmax(X[id] @ self.W)
                     grad += np.outer(X[id], self.one_hot(y[id]) - y_pred)
                 self.W += lr * grad / self.num_sample
-
         else:
             print('NO SUCH STRATEGY!')
