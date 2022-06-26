@@ -5,13 +5,13 @@ from module import SoftmaxRegression
 PATH = '../../python_data/data/'
 NUM_TYPE = 5
 
-num_sample = 1000
-per = 0.3  # data_train : data_valid == 7 : 3
+num_sample = 1500
+per = 0.7  # per = num_train / num_sample
 ngram = 3
 epochs = 1000000
-learning_rate = 1
+learning_rate = 0.01
 strategy = 'mini_batch'  # shuffle or mini_batch or batch
-mini_batch_size = 100
+mini_batch_size = 50
 
 if __name__ == '__main__':
     data = pd.read_csv(PATH + 'train.tsv', sep='\t')

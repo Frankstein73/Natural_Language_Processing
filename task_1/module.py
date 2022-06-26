@@ -50,7 +50,7 @@ class SoftmaxRegression:
         return vector_x / np.sum(vector_x)
 
     def one_hot(self, y):
-        vector_y = np.zeros((self.num_type, 1))
+        vector_y = np.zeros(self.num_type)
         vector_y[y] = 1
         return vector_y
 
@@ -65,10 +65,12 @@ class SoftmaxRegression:
         num_sample, num_features = X.shape
         y_pred = self.calculate(X)
         correct = 0
+        ans = 0
         for i in range(num_sample):
             if y[i] == y_pred[i]:
                 correct += 1
         correct /= num_sample
+        print('ans = ', ans)
         return correct
 
     def cross_entropy(self, y, y_pred):
@@ -81,7 +83,7 @@ class SoftmaxRegression:
         x = list(range(1, epochs + 1))
         plt.xlabel('Epoch')
         plt.ylabel('Cross Entropy')
-        plt.yscale('log')
+        # plt.yscale('log')
         plt.plot(x, self.loss, color='red')
         plt.show()
 
@@ -96,18 +98,16 @@ class SoftmaxRegression:
                 grad = np.zeros((self.num_features, self.num_type))
                 for i in range(mini_size):
                     id = random.randint(0, self.num_sample - 1)
-                    y_pred = self.softmax(self.W.T.dot(X[id].reshape(-1, 1)))
-                    grad += X[id].reshape(-1, 1).dot((self.one_hot(y[id]) - y_pred).T)
-                    self.loss.append(self.cross_entropy(self.one_hot(y[id]), y_pred)[y[id]])
+                    y_pred = self.softmax(X[id] @ self.W)
+                    grad += np.outer(X[id], self.one_hot(y[id]) - y_pred)
                 self.W += lr * grad / mini_size
 
         elif strategy == 'shuffle':
             for epoch in range(epochs):
                 grad = np.zeros((self.num_features, self.num_type))
                 id = random.randint(0, self.num_sample - 1)
-                y_pred = self.softmax(self.W.T.dot(X[id].reshape(-1, 1)))
-                grad += X[id].reshape(-1, 1).dot((self.one_hot(y[id]) - y_pred).T)
-                self.loss.append(self.cross_entropy(self.one_hot(y[id]), y_pred)[y[id]])
+                y_pred = self.softmax(X[id] @ self.W)
+                grad += np.outer(X[id], self.one_hot(y[id]) - y_pred)
                 self.W += lr * grad
 
         elif strategy == 'batch':
@@ -115,9 +115,8 @@ class SoftmaxRegression:
             for epoch in range(epochs):
                 grad = np.zeros((self.num_features, self.num_type))
                 for id in range(self.num_sample):
-                    y_pred = self.softmax(self.W.T.dot(X[id].reshape(-1, 1)))
-                    grad += X[id].reshape(-1, 1).dot((self.one_hot(y[id]) - y_pred).T)
-                    self.loss.append(self.cross_entropy(self.one_hot(y[id]), y_pred)[y[id]])
+                    y_pred = self.softmax(X[id] @ self.W)
+                    grad += np.outer(X[id], self.one_hot(y[id]) - y_pred)
                 self.W += lr * grad / self.num_sample
 
         else:
