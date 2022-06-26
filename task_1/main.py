@@ -17,7 +17,6 @@ if __name__ == '__main__':
     data = pd.read_csv(PATH + 'train.tsv', sep='\t')
     bag = Ngram(data=data, ngram=range(1, ngram + 1), iters=num_sample)
     X_train, y_train, X_valid, y_valid = bag.data_split(per=per)
-    print(X_train)
     reg = SoftmaxRegression(num_type=NUM_TYPE)
     reg.fit(X_train, y_train, lr=learning_rate, epochs=epochs, strategy=strategy, mini_size=mini_batch_size)
     correct_rate_train = reg.predict(X_train, y_train)
