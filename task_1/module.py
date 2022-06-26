@@ -1,10 +1,6 @@
 import random
 import numpy as np
-import pandas as pd
 import matplotlib.pyplot as plt
-
-PATH = '../python_data/data/'
-data = pd.read_csv(PATH + 'train.tsv', sep='\t')
 
 
 class Ngram:
@@ -32,8 +28,6 @@ class Ngram:
                 words = phrase.split()
                 for j in range(len(words) - gram + 1):
                     word = ' '.join(words[j:j + gram])
-                    # if word not in self.word_bags:
-                    #     print("!!!")
                     self.features[j][self.word_bags[word]] += 1
             self.features[i][len(self.word_bags)] = 1
 
@@ -49,6 +43,7 @@ class SoftmaxRegression:
         self.num_sample = None
         self.num_type = num_type
         self.W = None
+        self.loss = None
 
     def softmax(self, vector_x):
         vector_x = np.exp(vector_x - np.max(vector_x))
@@ -68,54 +63,62 @@ class SoftmaxRegression:
 
     def predict(self, X, y):
         num_sample, num_features = X.shape
-        print(num_sample, num_features)
-        # correct = sum([y[i] == self.calculate(X[i]) for i in range(num_sample)]) / num_sample
         y_pred = self.calculate(X)
         correct = 0
         for i in range(num_sample):
             if y[i] == y_pred[i]:
                 correct += 1
-        print(correct / num_sample)
+        correct /= num_sample
+        return correct
 
     def cross_entropy(self, y, y_pred):
         return -np.multiply(y, np.log(y_pred))
 
-    def fit(self, X, y, lr=1, epochs=7000, strategy='mini_size', mini_size=100):
+    def loss_plot(self):
+        epochs = len(self.loss)
+        if epochs == 0:
+            return
+        x = list(range(1, epochs + 1))
+        plt.xlabel('Epoch')
+        plt.ylabel('Cross Entropy')
+        plt.yscale('log')
+        plt.plot(x, self.loss, color='red')
+        plt.show()
+
+    def fit(self, X, y, lr=1, epochs=7000, strategy='mini_batch', mini_size=100):
         self.num_sample, self.num_features = X.shape
         self.W = np.ones((self.num_features, self.num_type))
+        self.loss = []
 
-        if strategy == 'mini_size':
+        if strategy == 'mini_batch':
+            epochs = epochs // mini_size
             for epoch in range(epochs):
                 grad = np.zeros((self.num_features, self.num_type))
                 for i in range(mini_size):
                     id = random.randint(0, self.num_sample - 1)
                     y_pred = self.softmax(self.W.T.dot(X[id].reshape(-1, 1)))
                     grad += X[id].reshape(-1, 1).dot((self.one_hot(y[id]) - y_pred).T)
-                    # print(self.cross_entropy(self.one_hot(y[id]), y_pred)[y[id]])
+                    self.loss.append(self.cross_entropy(self.one_hot(y[id]), y_pred)[y[id]])
                 self.W += lr * grad / mini_size
 
-        if strategy == 'shuffle':
-            for epoch in range(epochs * mini_size):
+        elif strategy == 'shuffle':
+            for epoch in range(epochs):
                 grad = np.zeros((self.num_features, self.num_type))
                 id = random.randint(0, self.num_sample - 1)
                 y_pred = self.softmax(self.W.T.dot(X[id].reshape(-1, 1)))
                 grad += X[id].reshape(-1, 1).dot((self.one_hot(y[id]) - y_pred).T)
+                self.loss.append(self.cross_entropy(self.one_hot(y[id]), y_pred)[y[id]])
                 self.W += lr * grad
 
-        if strategy == 'batch':
+        elif strategy == 'batch':
+            epochs = epochs // self.num_sample
             for epoch in range(epochs):
                 grad = np.zeros((self.num_features, self.num_type))
                 for id in range(self.num_sample):
                     y_pred = self.softmax(self.W.T.dot(X[id].reshape(-1, 1)))
                     grad += X[id].reshape(-1, 1).dot((self.one_hot(y[id]) - y_pred).T)
-
+                    self.loss.append(self.cross_entropy(self.one_hot(y[id]), y_pred)[y[id]])
                 self.W += lr * grad / self.num_sample
 
-
-bag = Ngram(data=data, ngram=[1, 2, 3])
-X_train, y_train, X_valid, y_valid = bag.data_split()
-reg = SoftmaxRegression(num_type=5)
-reg.fit(X_train, y_train, strategy='batch')
-
-reg.predict(X_train, y_train)
-reg.predict(X_valid, y_valid)
+        else:
+            print('NO SUCH STRATEGY!')
