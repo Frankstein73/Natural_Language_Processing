@@ -8,16 +8,16 @@ from network import TextCNN
 device = "cuda" if torch.cuda.is_available() else "cpu"
 PATH = '../../python_data/data/'
 NUM_TYPE = 5
-num_sample = 1000
+num_sample = 100000
 per = 0.7
-length = 30
-epochs = 10000
-lr = 0.05
-embedding_size = 32
+length = 50
+epochs = 20
+lr = 1
+embedding_size = 10
 features_size = 2
 kernel = [2, 3, 4]
-dropout = 0.3
-batch_size = 10
+dropout = 0.5
+batch_size = 20
 
 if __name__ == '__main__':
     data = pd.read_csv(PATH + 'train.tsv', sep='\t')
@@ -28,7 +28,7 @@ if __name__ == '__main__':
     criterion = nn.CrossEntropyLoss().to(device)
     optimizer = torch.optim.SGD(net.parameters(), lr=1e-3)
     loss_history = []
-    net = torch.load('net.pkl')
+    # net = torch.load('net.pkl')
     # print("!")
     for epoch in range(epochs):
         print(epoch)
